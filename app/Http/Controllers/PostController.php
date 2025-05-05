@@ -10,7 +10,7 @@ class PostController extends Controller
 {
     function index()
     {
-        $posts = Post::paginate(2);
+        $posts = Post::paginate(6);
         return view('posts.index', compact('posts'));
     }
 
@@ -21,10 +21,10 @@ class PostController extends Controller
     // }
     public function show($id)
     {
-        $post = Post::findOrFail($id); // جلب البوست
-        $post->load('comments'); // تحميل الكومنتات الخاصة بالبوست
+        $post = Post::findOrFail($id); 
+        $post->load('comments');
     
-        return view('posts.show', compact('post')); // تمرير البوست والكومنتات للعرض
+        return view('posts.show', compact('post')); 
     }
     
     function create()
