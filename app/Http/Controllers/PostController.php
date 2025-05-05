@@ -2,104 +2,90 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
 use Illuminate\Http\Request;
+
 
 class PostController extends Controller
 {
-    private function initSession()
+    function index()
     {
-        if (!session()->has('posts')) {
-            $posts = [
-                1 => ['id' => 1, 'title' => 'Post1 title', 'description' => 'post1 description'],
-                2 => ['id' => 2, 'title' => 'Post2 title', 'description' => 'post2 description'],
-                3 => ['id' => 3, 'title' => 'Post3 title', 'description' => 'post3 description'],
-                4 => ['id' => 4, 'title' => 'Post4 title', 'description' => 'post4 description'],
-            ];
-            session(['posts' => $posts]);
-        }
-    }
-
-    public function index()
-    {
-        $this->initSession();
-        $posts = session('posts');
+        $posts = Post::all();
         return view('posts.index', compact('posts'));
     }
 
-    public function show($id)
+    function show($id)
     {
-        $this->initSession();
-        $posts = session('posts');
-        $post = $posts[$id] ?? abort(404);
+        $post = Post::findOrFail($id);
         return view('posts.show', compact('post'));
     }
 
-    public function create()
+    function create()
     {
         return view('posts.create');
     }
 
-    public function store(Request $request)
+    function store(Request $request)
     {
-        $this->initSession();
-        $posts = session('posts');
-
         $validated = $request->validate([
-            'title' => 'required|max:255',
-            'description' => 'required',
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+            'image' => ['nullable', 'image', 'max:2048'], // optional image
+            'comment' => ['nullable', 'string'],
         ]);
 
-        $newId = max(array_keys($posts)) + 1;
-        $newPost = [
-            'id' => $newId,
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-        ];
+        $post = new Post();
 
-        $posts[$newId] = $newPost;
-        session(['posts' => $posts]);
+        $post->title = $validated['title'];
+        $post->description = $validated['description'];
+        $post->comment = $validated['comment'] ?? null;
 
-        return redirect()->route('posts.index')->with('success', 'Post added successfully!');
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('images', 'public');
+            $post->image = $path;
+        }
+
+        $post->save();
+
+        return to_route('posts.index');
     }
 
-    public function edit($id)
+    function edit($id)
     {
-        $this->initSession();
-        $posts = session('posts');
-        $post = $posts[$id] ?? abort(404);
+        $post = Post::findOrFail($id);
         return view('posts.edit', compact('post'));
     }
 
-    public function update(Request $request, $id)
+    function update(Request $request, $id)
     {
-        $this->initSession();
-        $posts = session('posts');
+        $post = Post::findOrFail($id);
 
         $validated = $request->validate([
-            'title' => 'required|max:255',
-            'description' => 'required',
+            'title' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+            'image' => ['nullable', 'image', 'max:2048'],
+            'comment' => ['nullable', 'string'],
         ]);
 
-        if (isset($posts[$id])) {
-            $posts[$id]['title'] = $validated['title'];
-            $posts[$id]['description'] = $validated['description'];
-            session(['posts' => $posts]);
+        $post->title = $validated['title'];
+        $post->description = $validated['description'];
+        $post->comment = $validated['comment'] ?? null;
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('images', 'public');
+            $post->image = $path;
         }
 
-        return redirect()->route('posts.index')->with('success', 'Post updated successfully!');
+        $post->save();
+
+        return to_route('posts.index');
     }
 
-    public function destroy($id)
+    function destroy($id)
     {
-        $this->initSession();
-        $posts = session('posts');
-
-        if (isset($posts[$id])) {
-            unset($posts[$id]);
-            session(['posts' => $posts]);
-            return redirect()->route('posts.index')->with('success', 'Post deleted successfully!');
-        }
-
-        return redirect()->route('posts.index')->with('error', 'Post not found!');
+        $post = Post::findOrFail($id);
+        $post->delete();
+        return to_route('posts.index');
     }
 }

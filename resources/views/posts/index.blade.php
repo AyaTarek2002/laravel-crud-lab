@@ -1,61 +1,29 @@
-@extends('layouts.app')
+@extends('layout')
 
-@section('content')
-<div class="container mt-4">
-    <h1>All Posts</h1>
+@section('section1')
+<a class="btn btn-info" href="{{ route('posts.create') }}"> Create New Post </a>
 
-    <a href="{{ route('posts.create') }}" class="btn btn-success mb-3">Add New Post</a>
-    
-    @if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-    @endif
+<div class="row">
+    @foreach ($posts as $post)
+        <div class="col-md-4 mb-4">
+            <div class="card" style="width: 100%;">
+                <img src="{{ asset('storage/' . $post->image) }}" class="card-img-top" alt="Post Image" width="80" height="100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ $post->title }}</h5>
+                    <p class="card-text">{{ $post->description }}</p>
+                    <p class="card-text">{{ $post->comment }}</p>
 
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($posts as $post)
-            <tr>
-                <td>{{ $post['title'] }}</td>
-                <td>{{ $post['description'] }}</td>
-                <td>
-                    <a href="{{ route('posts.show', $post['id']) }}" class="btn btn-info btn-sm">Show</a>
-                    <a href="{{ route('posts.edit', $post['id']) }}" class="btn btn-warning btn-sm">Edit</a>
-                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ $post['id'] }}">Delete</button>
-                    
-                    <!-- Delete Modal -->
-                    <div class="modal fade" id="deleteModal{{ $post['id'] }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    Are you sure you want to delete this post?
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                    <form action="{{ route('posts.destroy', $post['id']) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger">Delete</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+                    <a class="btn btn-primary" href="{{ route('posts.show', $post->id) }}"> Show </a>
+                    <a class="btn btn-warning" href="{{ route('posts.edit', $post->id) }}"> Edit </a>
+
+                    <form action="{{ route('posts.destroy', $post->id) }}" method="POST" class="mt-2">
+                        @method('DELETE')
+                        @csrf
+                        <button class="btn btn-danger" type="submit"> Delete </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endforeach
 </div>
 @endsection
