@@ -5,41 +5,163 @@
 @section('sub-title', 'Post Details')
 
 @section('section1')
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            @if($post->image)
-            <img src="{{ asset('storage/' . $post->image) }}" class="card-img-top" alt="Post Image">
-            @else
-            <div class="card-img-top bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 300px;">
-                <i class="fas fa-image fa-5x"></i>
-            </div>
-            @endif
-            <div class="card-body">
-                <h3 class="card-title">{{ $post->title }}</h3>
-                <p class="card-text">{{ $post->description }}</p>
-                @if($post->comment)
-                <div class="alert alert-info">
-                    <h5>Comment:</h5>
-                    <p>{{ $post->comment }}</p>
-                </div>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Post Card -->
+            <div class="card shadow-sm mb-5">
+                @if($post->image)
+                    <div class="post-image-wrapper" style="background: #f8f9fa; display: flex; justify-content: center; align-items: center; max-height: 80vh; overflow: hidden;">
+                        <img src="{{ asset('storage/' . $post->image) }}" 
+                             class="img-fluid" 
+                             alt="Post Image"
+                             style="max-width: 100%; max-height: 80vh; width: auto; height: auto; object-fit: contain;">
+                    </div>
+                @else
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+                        <i class="fas fa-image fa-5x text-muted"></i>
+                    </div>
                 @endif
-                <div class="d-flex justify-content-between mt-4">
-                    <a href="{{ route('posts.index') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-arrow-left"></i> Back to Posts
-                    </a>
-                    <div>
-                        <a href="{{ route('posts.edit', $post->id) }}" class="btn btn-warning">
-                            <i class="fas fa-edit"></i> Edit
+                
+                <div class="card-body">
+                    <h2 class="card-title mb-3">{{ $post->title }}</h2>
+                    <div class="card-text mb-4">
+                        {!! nl2br(e($post->description)) !!}
+                    </div>
+                    
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a href="{{ route('posts.index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Posts
                         </a>
+                        <div>
+                            <a href="{{ route('posts.edit', $post->id) }}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit me-2"></i>Edit Post
+                            </a>
+                        </div>
                     </div>
                 </div>
+                
+                <div class="card-footer bg-transparent text-muted d-flex justify-content-between">
+                    <small><i class="far fa-calendar-plus me-1"></i> {{ $post->created_at->format('M d, Y H:i') }}</small>
+                   
+                </div>
             </div>
-            <div class="card-footer text-muted d-flex justify-content-between">
-                <small>Created: {{ $post->created_at->format('M d, Y H:i') }}</small>
-                <small>Updated: {{ $post->updated_at->format('M d, Y H:i') }}</small>
+
+            <!-- Comments Section -->
+            <div class="mb-5">
+                <h4 class="mb-4 pb-2 border-bottom">
+                    <i class="far fa-comments me-2"></i>Comments 
+                    <span class="badge bg-primary rounded-pill ms-2">{{ $post->comments->count() }}</span>
+                </h4>
+                
+                @forelse($post->comments as $comment)
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <span class="text-muted small">Comment #{{ $comment->id }}</span>
+                                </div>
+                                <div class="text-muted small">
+                                    {{ $comment->created_at->format('M d, Y H:i') }}
+                                </div>
+                            </div>
+                            
+                            <p class="card-text mb-3">{!! nl2br(e($comment->comment)) !!}</p>
+                            
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ route('comments.edit', $comment->id) }}" class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-edit me-1"></i>Edit
+                                </a>
+                                
+                                <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" class="delete-form">
+    @csrf
+    @method('DELETE')
+    <button type="submit" class="btn btn-sm btn-outline-danger">
+        <i class="fas fa-trash me-1"></i>Delete
+    </button>
+</form>
+
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>No comments yet. Be the first to comment!
+                    </div>
+                @endforelse
+            </div>
+
+            <!-- Add Comment Form -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">
+                        <i class="far fa-plus-square me-2"></i>Add a Comment
+                    </h4>
+                    
+                    <form action="{{ route('comments.store') }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <textarea name="comment" id="comment" class="form-control" rows="4" 
+                                placeholder="Write your comment here..." required>{{ old('comment') }}</textarea>
+                            @error('comment')
+                                <div class="text-danger small mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <input type="hidden" name="post_id" value="{{ $post->id }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="far fa-paper-plane me-2"></i>Submit Comment
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .post-image-wrapper {
+        position: relative;
+        min-height: 200px;
+    }
+    
+    .post-image-wrapper img {
+        display: block;
+        margin: 0 auto;
+    }
+    
+    @media (max-width: 768px) {
+        .post-image-wrapper {
+            max-height: 60vh !important;
+        }
+    }
+</style>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+       
+        const deleteForms = document.querySelectorAll('.delete-form');
+        
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
 @endsection

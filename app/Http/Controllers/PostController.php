@@ -10,16 +10,23 @@ class PostController extends Controller
 {
     function index()
     {
-        $posts = Post::all();
+        $posts = Post::paginate(2);
         return view('posts.index', compact('posts'));
     }
 
-    function show($id)
+    // function show($id)
+    // {
+    //     $post = Post::findOrFail($id);
+    //     return view('posts.show', compact('post'));
+    // }
+    public function show($id)
     {
-        $post = Post::findOrFail($id);
-        return view('posts.show', compact('post'));
+        $post = Post::findOrFail($id); // جلب البوست
+        $post->load('comments'); // تحميل الكومنتات الخاصة بالبوست
+    
+        return view('posts.show', compact('post')); // تمرير البوست والكومنتات للعرض
     }
-
+    
     function create()
     {
         return view('posts.create');
@@ -63,7 +70,7 @@ class PostController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => ['nullable', 'image'],
             'comment' => ['nullable', 'string'],
         ]);
 
