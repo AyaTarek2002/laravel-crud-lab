@@ -30,7 +30,7 @@ class PostController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
-            'image' => ['nullable', 'image', 'max:2048'], // optional image
+            'image' => ['nullable', 'image'], 
             'comment' => ['nullable', 'string'],
         ]);
 
@@ -40,7 +40,6 @@ class PostController extends Controller
         $post->description = $validated['description'];
         $post->comment = $validated['comment'] ?? null;
 
-        // Handle image upload
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('images', 'public');
             $post->image = $path;
