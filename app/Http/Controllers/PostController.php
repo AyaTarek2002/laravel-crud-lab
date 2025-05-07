@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
-
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 class PostController extends Controller
 {
     function index()
@@ -34,6 +34,8 @@ class PostController extends Controller
 
     function store(Request $request)
     {
+
+        $request["user_id"] = Auth::id();
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
@@ -51,6 +53,8 @@ class PostController extends Controller
             $path = $request->file('image')->store('images', 'public');
             $post->image = $path;
         }
+
+        $post->user_id = auth()->id();
 
         $post->save();
 

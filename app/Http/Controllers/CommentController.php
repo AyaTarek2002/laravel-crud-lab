@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Comment;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class CommentController extends Controller
 {
@@ -25,16 +27,21 @@ class CommentController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'comment' => 'required|string',
-            'post_id' => 'required|exists:posts,id',
+        $validated = $request->validate([
+            'comment' => ['required', 'string'],
+            'post_id' => ['required', 'exists:posts,id'],
         ]);
-
-        Comment::create($request->all());
-
-        return redirect()->route('posts.show', ['id' => $request->post_id])->with('success', 'Comment added successfully');
+    
+      
+        $comment = new Comment();
+        $comment->comment = $validated['comment'];
+        $comment->post_id = $validated['post_id'];
+        $comment->user_id = auth()->id(); 
+        $comment->save();
+    
+        return redirect()->route('posts.show', $validated['post_id']);
     }
-
+    
     public function show(Comment $comment)
     {
         return view('comments.show', compact('comment'));
@@ -70,7 +77,9 @@ class CommentController extends Controller
     public function edit($id)
     {
         $comment = Comment::findOrFail($id);
-
+        if (Gate::denies('update-comment', $comment)) {
+            abort(403, 'You do not have permission to edit this comment.');
+        }
         // dd($comment);
         return view('comments.edit', compact('comment'));
     }
@@ -93,6 +102,9 @@ class CommentController extends Controller
     public function destroy($id)
     {
         $comment = Comment::findOrFail($id);
+        if (Gate::denies('delete-comment', $comment)) {
+            abort(403, 'You do not have permission to delete this comment.');
+        }
         $postId = $comment->post_id;
         $comment->delete();
 

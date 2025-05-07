@@ -44,6 +44,11 @@
                 
                 <div class="card-footer bg-transparent text-muted d-flex justify-content-between">
                     <small><i class="far fa-calendar-plus me-1"></i> {{ $post->created_at->format('M d, Y H:i') }}</small>
+                    <p>Created by: {{ $post->user->name }}</p>
+
+
+                    
+
                    
                 </div>
             </div>
@@ -56,40 +61,47 @@
                 </h4>
                 
                 @forelse($post->comments as $comment)
-                    <div class="card mb-3 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <span class="text-muted small">Comment #{{ $comment->id }}</span>
-                                </div>
-                                <div class="text-muted small">
-                                    {{ $comment->created_at->format('M d, Y H:i') }}
-                                </div>
-                            </div>
-                            
-                            <p class="card-text mb-3">{!! nl2br(e($comment->comment)) !!}</p>
-                            
-                            <div class="d-flex justify-content-end gap-2">
-                                <a href="{{ route('comments.edit', $comment->id) }}" class="btn btn-sm btn-outline-warning">
-                                    <i class="fas fa-edit me-1"></i>Edit
-                                </a>
-                                
-                                <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" class="delete-form">
-    @csrf
-    @method('DELETE')
-    <button type="submit" class="btn btn-sm btn-outline-danger">
-        <i class="fas fa-trash me-1"></i>Delete
-    </button>
-</form>
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                   
+                    <span class="text-muted small">Comment by {{ $comment->user->name }}</span> 
+                </div>
+                <div class="text-muted small">
+                    {{ $comment->created_at->format('M d, Y H:i') }}
+                </div>
+            </div>
+            
+            <p class="card-text mb-3">{!! nl2br(e($comment->comment)) !!}</p>
+            
+            <div class="d-flex justify-content-end gap-2">
+              
+                @can('update-comment', $comment)
+                    <a href="{{ route('comments.edit', $comment->id) }}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-edit me-1"></i>Edit
+                    </a>
+                @endcan
+                
+           
+                @can('delete-comment', $comment)
+                    <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" class="delete-form">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash me-1"></i>Delete
+                        </button>
+                    </form>
+                @endcan
+            </div>
+        </div>
+    </div>
+@empty
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>No comments yet. Be the first to comment!
+    </div>
+@endforelse
 
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>No comments yet. Be the first to comment!
-                    </div>
-                @endforelse
             </div>
 
             <!-- Add Comment Form -->
