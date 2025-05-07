@@ -22,10 +22,6 @@
         @error('image') <div class="text-danger">{{ $message }}</div> @enderror
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Comment</label>
-        <input type="text" class="form-control" name="comment" value="{{ old('comment') }}">
-    </div>
 
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>

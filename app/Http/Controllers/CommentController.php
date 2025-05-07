@@ -75,7 +75,7 @@ class CommentController extends Controller
         return view('comments.edit', compact('comment'));
     }
 
-    // حفظ التعديلات
+  
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -90,7 +90,6 @@ class CommentController extends Controller
         return redirect()->route('posts.show', $comment->post_id)->with('success', 'Comment updated successfully');
     }
 
-    // حذف الكومنت
     public function destroy($id)
     {
         $comment = Comment::findOrFail($id);

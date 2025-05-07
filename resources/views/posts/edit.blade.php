@@ -22,11 +22,7 @@
         <input type="file" class="form-control mt-2" name="image">
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Comment</label>
-        <input type="text" class="form-control" name="comment" value="{{ $post->comment }}">
-    </div>
-
+  
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 
