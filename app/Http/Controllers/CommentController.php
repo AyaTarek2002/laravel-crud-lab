@@ -28,20 +28,24 @@ class CommentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'comment' => ['required', 'string'],
-            'post_id' => ['required', 'exists:posts,id'],
+            'comment' => 'required|string',
+            'post_id' => 'required|exists:posts,id',
+            'parent_id' => 'nullable|exists:comments,id',
         ]);
     
-      
         $comment = new Comment();
         $comment->comment = $validated['comment'];
         $comment->post_id = $validated['post_id'];
+     
         $comment->user_id = auth()->id(); 
         $comment->save();
+
+        if (isset($validated['parent_id'])) {
+            $comment->parent_id = $validated['parent_id'];
+        }
     
         return redirect()->route('posts.show', $validated['post_id']);
     }
-    
     public function show(Comment $comment)
     {
         return view('comments.show', compact('comment'));
@@ -110,5 +114,25 @@ class CommentController extends Controller
 
         return redirect()->route('posts.show', $postId)->with('success', 'Comment deleted successfully');
     }
+
+    public function reply(Request $request, Comment $comment)
+    {
+        $request->validate([
+            'comment' => 'required|string|max:1000'
+        ]);
+    
+        $reply = new Comment([
+            'comment' => $request->comment,
+            'parent_id' => $comment->id
+        ]);
+    
+        $reply->user_id = auth()->id();
+        $reply->post_id = $comment->post_id;
+        $reply->save();
+    
+        return back()->with('success', 'Reply added successfully!');
+    }
+
+
 }
 

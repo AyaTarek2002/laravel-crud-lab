@@ -63,13 +63,22 @@ class PostController extends Controller
 
     function edit($id)
     {
+        //post::-> name of model
         $post = Post::findOrFail($id);
+        if (Gate::denies('update-post', $post)) {
+            abort(403, 'You do not have permission to edit this post.');
+        }
         return view('posts.edit', compact('post'));
     }
 
     function update(Request $request, $id)
     {
         $post = Post::findOrFail($id);
+
+
+        if (Gate::denies('update-post', $post)) {
+            abort(403, 'You do not have permission to edit this post.');
+        } 
 
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
@@ -95,6 +104,9 @@ class PostController extends Controller
     function destroy($id)
     {
         $post = Post::findOrFail($id);
+        if (Gate::denies('delete-post', $post)) {
+            abort(403, 'You do not have permission to delete this post.');
+        }
         $post->delete();
         return to_route('posts.index');
     }

@@ -110,6 +110,41 @@
             });
         });
     });
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // SweetAlert for delete
+        document.querySelectorAll('form.delete-form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+
+        // Show/hide reply form
+        document.querySelectorAll('.show-reply-form').forEach(button => {
+            button.addEventListener('click', function () {
+                const replyForm = this.nextElementSibling;
+                if (replyForm) {
+                    replyForm.classList.toggle('d-none');
+                }
+            });
+        });
+    });
+
+
 </script>
 </body>
 </html>
